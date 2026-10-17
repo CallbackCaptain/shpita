@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, type PointerEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Volume2, VolumeX, Pause } from 'lucide-react';
+import { Volume2, VolumeX, Pause, Play } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { triggerHaptic } from '../utils/haptics';
 import { sound } from '../utils/sound';
@@ -32,7 +32,7 @@ const getStatFontSize = (text?: string) => {
 const STORIES_DATA: StorySlide[] = [
   {
     id: 'story-neuschpitastein',
-    duration: 6000,
+    duration: 9000,
     tag: 'АРХИТЕКТУРА И ТУРИЗМ',
     title: 'Главная жемчужина и замок Баварии',
     statNumber: 'Нойшпиташтайн',
@@ -44,7 +44,7 @@ const STORIES_DATA: StorySlide[] = [
   },
   {
     id: 'story-beer',
-    duration: 6000,
+    duration: 9000,
     tag: 'МЕЖДУНАРОДНЫЙ ЭТИКЕТ',
     title: 'Как правильно делать заказ в баре Германии',
     statNumber: 'Шпиту пива!',
@@ -56,7 +56,7 @@ const STORIES_DATA: StorySlide[] = [
   },
   {
     id: 'story-capital',
-    duration: 6000,
+    duration: 9000,
     tag: 'ГЕОГРАФИЯ ГОДА',
     title: 'Куда ведут скоростные немецкие автобаны',
     statNumber: 'Шпитсбург',
@@ -68,7 +68,7 @@ const STORIES_DATA: StorySlide[] = [
   },
   {
     id: 'story-genetics',
-    duration: 6000,
+    duration: 9000,
     tag: 'ГЕНЕТИКА И ФИЛОСОФИЯ',
     title: 'Главный неразрешимый вопрос года',
     statNumber: '100% Шпита',
@@ -80,7 +80,7 @@ const STORIES_DATA: StorySlide[] = [
   },
   {
     id: 'story-precision',
-    duration: 6000,
+    duration: 9000,
     tag: 'НЕМЕЦКАЯ ТОЧНОСТЬ',
     title: 'Инструмент максимальной точности',
     statNumber: 'Шпитациркуль',
@@ -92,7 +92,7 @@ const STORIES_DATA: StorySlide[] = [
   },
   {
     id: 'story-diagnosis',
-    duration: 6000,
+    duration: 9000,
     tag: 'ИТОГОВЫЙ ВЕРДИКТ',
     title: 'Заключение врачебной комиссии',
     statNumber: 'Острая Шпита',
@@ -110,6 +110,7 @@ export default function RecapScene() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [progress, setProgress] = useState(0); // от 0 до 100
   const [isPaused, setIsPaused] = useState(false);
+  const [isHolding, setIsHolding] = useState(false);
   const [slideDirection, setSlideDirection] = useState<1 | -1>(1);
 
   // Рефы для таймера и распознавания "Тап / Свайп / Удержание"
@@ -119,9 +120,21 @@ export default function RecapScene() {
   const pointerStartXRef = useRef<number>(0);
   const pointerStartYRef = useRef<number>(0);
   const isHoldingRef = useRef<boolean>(false);
+  const isManuallyPausedRef = useRef<boolean>(false);
   const holdTimeoutRef = useRef<number | null>(null);
 
   const currentStory = STORIES_DATA[currentIndex];
+
+  // Переключение паузы кнопкой или клавишей
+  const togglePause = useCallback(() => {
+    triggerHaptic(10);
+    sound.playTap(isMuted);
+    setIsPaused((prev) => {
+      const next = !prev;
+      isManuallyPausedRef.current = next;
+      return next;
+    });
+  }, [isMuted]);
 
   // Переход к следующему слайду (или следующей сцене)
   const handleNextStory = useCallback(() => {
@@ -181,13 +194,13 @@ export default function RecapScene() {
         handlePrevStory();
       } else if (e.key === ' ') {
         e.preventDefault();
-        setIsPaused((p) => !p);
+        togglePause();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleNextStory, handlePrevStory]);
+  }, [handleNextStory, handlePrevStory, togglePause]);
 
   // Игровой цикл (requestAnimationFrame) для плавного заполнения полосок
   useEffect(() => {
@@ -253,6 +266,7 @@ export default function RecapScene() {
     if (holdTimeoutRef.current) clearTimeout(holdTimeoutRef.current);
     holdTimeoutRef.current = window.setTimeout(() => {
       isHoldingRef.current = true;
+      setIsHolding(true);
       setIsPaused(true);
     }, 350);
   };
@@ -271,11 +285,15 @@ export default function RecapScene() {
     // Если был в режиме удержания (паузы)
     if (isHoldingRef.current || holdDuration > 400) {
       isHoldingRef.current = false;
-      setIsPaused(false);
+      setIsHolding(false);
+      // Если пауза не была включена вручную кнопкой, возобновляем воспроизведение
+      if (!isManuallyPausedRef.current) {
+        setIsPaused(false);
+      }
       return;
     }
 
-    setIsPaused(false);
+    setIsHolding(false);
 
     // Проверяем свайп по горизонтали (свайп влево = вперед, свайп вправо = назад)
     const isHorizontalSwipe = Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5;
@@ -306,7 +324,10 @@ export default function RecapScene() {
       holdTimeoutRef.current = null;
     }
     isHoldingRef.current = false;
-    setIsPaused(false);
+    setIsHolding(false);
+    if (!isManuallyPausedRef.current) {
+      setIsPaused(false);
+    }
   };
 
   return (
@@ -333,7 +354,7 @@ export default function RecapScene() {
 
       {/* ВЕРХНЯЯ ПАНЕЛЬ: Прогресс-бары + Шапка */}
       <motion.header
-        animate={{ opacity: isPaused ? 0 : 1, y: isPaused ? -10 : 0 }}
+        animate={{ opacity: isHolding ? 0 : 1, y: isHolding ? -10 : 0 }}
         transition={{ duration: 0.2 }}
         className="relative z-20 space-y-3"
       >
@@ -367,33 +388,66 @@ export default function RecapScene() {
         </div>
 
         {/* Инфо-строка под полосками */}
-        <div className="flex items-center justify-between text-xs font-medium text-white/80">
-          <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs">
+        <div className="flex items-center justify-between text-xs font-medium text-white/80 gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <span className="w-6 h-6 shrink-0 rounded-full bg-white/20 flex items-center justify-center text-xs">
               ✨
             </span>
-            <span className="tracking-wide font-semibold">2026 WRAPPED</span>
-            <span className="text-white/40">•</span>
-            <span className="text-white/50">
+            <span className="tracking-wide font-semibold truncate">2026 WRAPPED</span>
+            <span className="text-white/40 shrink-0">•</span>
+            <span className="text-white/50 shrink-0">
               {currentIndex + 1} из {STORIES_DATA.length}
             </span>
           </div>
 
-          {/* Кнопка звука */}
-          <button
-            type="button"
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={(e) => {
-              e.stopPropagation();
-              triggerHaptic(10);
-              toggleMute();
-              sound.playTap(!isMuted);
-            }}
-            className="p-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md transition-colors"
-            title={isMuted ? 'Включить звук' : 'Выключить звук'}
-          >
-            {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-          </button>
+          {/* Кнопки управления: Пауза и Звук */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Очевидная кнопка Пауза / Плей */}
+            <button
+              type="button"
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                togglePause();
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full backdrop-blur-md transition-all text-xs font-semibold cursor-pointer border ${
+                isPaused
+                  ? 'bg-amber-500 border-amber-400 text-zinc-950 shadow-md shadow-amber-500/30 scale-105'
+                  : 'bg-white/10 hover:bg-white/20 border-white/15 text-white'
+              }`}
+              title={isPaused ? 'Возобновить просмотр' : 'Поставить на паузу'}
+              aria-label={isPaused ? 'Возобновить просмотр' : 'Поставить на паузу'}
+            >
+              {isPaused ? (
+                <>
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                  <span>Плей</span>
+                </>
+              ) : (
+                <>
+                  <Pause className="w-3.5 h-3.5 fill-current" />
+                  <span>Пауза</span>
+                </>
+              )}
+            </button>
+
+            {/* Кнопка звука */}
+            <button
+              type="button"
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                triggerHaptic(10);
+                toggleMute();
+                sound.playTap(!isMuted);
+              }}
+              className="p-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md transition-colors border border-white/15 text-white cursor-pointer"
+              title={isMuted ? 'Включить звук' : 'Выключить звук'}
+              aria-label={isMuted ? 'Включить звук' : 'Выключить звук'}
+            >
+              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            </button>
+          </div>
         </div>
       </motion.header>
 
@@ -471,16 +525,24 @@ export default function RecapScene() {
       <div className="relative z-20 h-8 flex items-center justify-center">
         <AnimatePresence mode="wait">
           {isPaused ? (
-            <motion.div
+            <motion.button
               key="paused-badge"
+              type="button"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 border border-white/15 text-xs text-white/80 backdrop-blur-md"
+              whileTap={{ scale: 0.95 }}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                togglePause();
+              }}
+              className="flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-black/75 border border-amber-400/50 text-xs text-amber-300 backdrop-blur-md cursor-pointer hover:bg-black/90 transition-all shadow-lg shadow-black/40"
+              title="Нажмите, чтобы продолжить"
             >
-              <Pause className="w-3 h-3 fill-current" />
-              <span>На паузе</span>
-            </motion.div>
+              <Play className="w-3 h-3 fill-current" />
+              <span className="font-medium">На паузе • Нажми, чтобы продолжить</span>
+            </motion.button>
           ) : (
             <motion.div
               key="hint-badge"
@@ -489,7 +551,7 @@ export default function RecapScene() {
               exit={{ opacity: 0 }}
               className="text-[11px] text-white/40 tracking-wide text-center"
             >
-              Тап — дальше • Свайп • Удерживай — пауза
+              Тап — дальше • Свайп • Кнопка «Пауза» наверху
             </motion.div>
           )}
         </AnimatePresence>
