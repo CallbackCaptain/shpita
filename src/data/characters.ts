@@ -1,4 +1,4 @@
-﻿// Персонажи для «Шпита-дейтинга».
+// Персонажи для «Шпита-дейтинга».
 // Чтобы добавить нового героя — просто допиши объект в CHARACTERS:
 // сцена сама подхватит его, пересчитает счётчики и мэтчи.
 
@@ -7,11 +7,11 @@ export type CharacterSwipe = 'like' | 'skip';
 export interface Character {
   id: string;
   name: string;
-  age: number;
   city: string;
   countryEmoji: string;
   job: string;
-  /** Необязательная подпись рядом с именем, например «бурят» */
+  /** Необязательный тег/подпись рядом с именем, например «бурят», «пчела» */
+  tag?: string;
   ethnicity?: string;
   distance: string;
   /** Большой эмодзи-портрет на «фото» */
@@ -32,7 +32,6 @@ export const CHARACTERS: Character[] = [
   {
     id: 'anya',
     name: 'Аня',
-    age: 24,
     city: 'Мюнхен',
     countryEmoji: '🇩🇪',
     job: 'бармен года в Баварии',
@@ -50,7 +49,6 @@ export const CHARACTERS: Character[] = [
   {
     id: 'sasha',
     name: 'Саша',
-    age: 26,
     city: 'Берлин',
     countryEmoji: '🇩🇪',
     job: 'гитарист Rammшпита',
@@ -68,7 +66,6 @@ export const CHARACTERS: Character[] = [
   {
     id: 'kostya',
     name: 'Костя',
-    age: 25,
     city: 'Шпитсбург',
     countryEmoji: '🇩🇪',
     job: 'инженер немецкой точности',
@@ -86,7 +83,6 @@ export const CHARACTERS: Character[] = [
   {
     id: 'kirill',
     name: 'Кирилл',
-    age: 27,
     city: 'Гамбург',
     countryEmoji: '🇩🇪',
     job: 'звукорежиссёр',
@@ -104,10 +100,10 @@ export const CHARACTERS: Character[] = [
   {
     id: 'andrey',
     name: 'Андрей',
-    age: 28,
     city: 'Улан-Удэ',
     countryEmoji: '🏔️',
     job: 'шеф-повар буузной',
+    tag: 'бурят',
     ethnicity: 'бурят',
     distance: 'через степь, 4200 км',
     avatar: '🧑‍🍳',
@@ -119,5 +115,24 @@ export const CHARACTERS: Character[] = [
     compatibility: 97,
     gradient: 'from-emerald-400 via-teal-500 to-cyan-700',
     accent: 'text-emerald-300',
+  },
+  {
+    id: 'yulia',
+    name: 'Юля',
+    city: 'Шпитсбург',
+    countryEmoji: '🍯',
+    job: 'главная пчёлка улья',
+    tag: 'пчела',
+    ethnicity: 'пчела',
+    distance: 'в одном жужжании от тебя',
+    avatar: '👱‍♀️',
+    stickers: ['🐝', '🍯', '✨'],
+    tagline: '«Ты пчела, я пчеловод, а вместе мы любим Шпиту!»',
+    bio: 'Главная пчёлка компании. Собираю чистейший нектар мемов, опыляю любой разговор хорошим настроением и приношу бочонок уюта. Готова жужжать на одной волне 24/7.',
+    interests: ['🐝 Шпита-улей', '🍯 Сладкий вайб', '🌻 Солнечные дни'],
+    superpower: 'Жужжит со скоростью 300 мемов в минуту и приносит тонну радости',
+    compatibility: 98,
+    gradient: 'from-amber-400 via-yellow-400 to-orange-500',
+    accent: 'text-amber-300',
   },
 ];

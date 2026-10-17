@@ -429,12 +429,12 @@ function CardFace({ character }: { character: Character }) {
       <div className="relative flex-1 min-h-0 -mt-5 short:-mt-4 px-5 short:px-4 pb-4 short:pb-3 overflow-y-auto no-scrollbar">
         <div className="flex items-center gap-1.5 flex-wrap">
           <h2 className="text-[26px] short:text-[22px] font-black leading-none text-white tracking-tight">
-            {character.name}, {character.age}
+            {character.name}
           </h2>
           <BadgeCheck className="w-[18px] h-[18px] text-sky-400 fill-sky-400/25 shrink-0" />
-          {character.ethnicity && (
+          {(character.tag || character.ethnicity) && (
             <span className="rounded-full border border-white/15 bg-white/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-white/70">
-              {character.ethnicity}
+              {character.tag || character.ethnicity}
             </span>
           )}
         </div>
@@ -537,8 +537,15 @@ function ResultsView({
                     {character.avatar}
                   </div>
                   <div className="min-w-0 flex-1 text-left">
-                    <div className="text-sm font-black text-white">
-                      {character.name}, {character.age}
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm font-black text-white">
+                        {character.name}
+                      </span>
+                      {(character.tag || character.ethnicity) && (
+                        <span className="rounded-full border border-white/15 bg-white/10 px-1.5 py-0.2 text-[8px] font-bold uppercase tracking-wider text-white/60">
+                          {character.tag || character.ethnicity}
+                        </span>
+                      )}
                     </div>
                     <div className="text-[10.5px] text-white/50 truncate">
                       {character.city} · {character.job}
