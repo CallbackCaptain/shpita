@@ -1,16 +1,26 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { sound } from '../utils/sound';
+import type { CharacterSwipe } from '../data/characters';
 
-export type SceneType = 'INTRO' | 'RECAP' | 'JOKES' | 'QUIZ' | 'GAME' | 'FINAL';
+export type SceneType = 'INTRO' | 'RECAP' | 'JOKES' | 'DATING' | 'QUIZ' | 'GAME' | 'FINAL';
 
-export const SCENE_ORDER: SceneType[] = ['INTRO', 'RECAP', 'JOKES', 'QUIZ', 'GAME', 'FINAL'];
+export const SCENE_ORDER: SceneType[] = [
+  'INTRO',
+  'RECAP',
+  'JOKES',
+  'DATING',
+  'QUIZ',
+  'GAME',
+  'FINAL',
+];
 
 interface AppState {
   currentScene: SceneType;
   direction: number; // 1 = вперед, -1 = назад (нужно для правильного вектора анимации)
   quizAnswers: Record<string, string>;
   jokeReactions: Record<string, string>;
+  characterSwipes: Record<string, CharacterSwipe>;
   gameScore: number;
   isAudioUnlocked: boolean;
   isMuted: boolean;
@@ -21,6 +31,9 @@ interface AppState {
   goToScene: (scene: SceneType) => void;
   saveQuizAnswer: (questionId: string, answer: string) => void;
   saveJokeReaction: (jokeId: string, reaction: string) => void;
+  saveCharacterSwipe: (characterId: string, swipe: CharacterSwipe) => void;
+  undoCharacterSwipe: (characterId: string) => void;
+  resetCharacterSwipes: () => void;
   setGameScore: (score: number | ((prev: number) => number)) => void;
   unlockAudio: () => void;
   toggleMute: () => void;
@@ -34,6 +47,7 @@ export const useAppStore = create<AppState>()(
       direction: 1,
       quizAnswers: {},
       jokeReactions: {},
+      characterSwipes: {},
       gameScore: 0,
       isAudioUnlocked: false,
       isMuted: false,
@@ -76,6 +90,20 @@ export const useAppStore = create<AppState>()(
           jokeReactions: { ...state.jokeReactions, [jokeId]: reaction },
         })),
 
+      saveCharacterSwipe: (characterId, swipe) =>
+        set((state) => ({
+          characterSwipes: { ...state.characterSwipes, [characterId]: swipe },
+        })),
+
+      undoCharacterSwipe: (characterId) =>
+        set((state) => {
+          const characterSwipes = { ...state.characterSwipes };
+          delete characterSwipes[characterId];
+          return { characterSwipes };
+        }),
+
+      resetCharacterSwipes: () => set({ characterSwipes: {} }),
+
       setGameScore: (scoreOrUpdater) =>
         set((state) => ({
           gameScore: typeof scoreOrUpdater === 'function' ? scoreOrUpdater(state.gameScore) : scoreOrUpdater,
@@ -95,6 +123,7 @@ export const useAppStore = create<AppState>()(
           direction: -1,
           quizAnswers: {},
           jokeReactions: {},
+          characterSwipes: {},
           gameScore: 0,
         }),
     }),
@@ -104,6 +133,7 @@ export const useAppStore = create<AppState>()(
         currentScene: state.currentScene,
         quizAnswers: state.quizAnswers,
         jokeReactions: state.jokeReactions,
+        characterSwipes: state.characterSwipes,
         gameScore: state.gameScore,
         isMuted: state.isMuted,
       }),

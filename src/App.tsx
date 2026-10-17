@@ -7,6 +7,8 @@ import { triggerHaptic } from './utils/haptics';
 import { sound } from './utils/sound';
 import RecapScene from './scenes/RecapScene';
 import JokesScene from './scenes/JokesScene';
+import DatingScene from './scenes/DatingScene';
+import { CHARACTERS } from './data/characters';
 
 // Варианты анимации переходов между сценами
 const sceneVariants: Variants = {
@@ -58,6 +60,7 @@ export default function App() {
             {currentScene === 'INTRO' && <IntroScene />}
             {currentScene === 'RECAP' && <RecapScene />}
             {currentScene === 'JOKES' && <JokesScene />}
+            {currentScene === 'DATING' && <DatingScene />}
             {currentScene === 'QUIZ' && <QuizScene />}
             {currentScene === 'GAME' && <GameScene />}
             {currentScene === 'FINAL' && <FinalScene />}
@@ -103,7 +106,7 @@ function IntroScene() {
         </h1>
 
         <p className="text-zinc-400 text-sm max-w-[280px] mx-auto leading-relaxed">
-          Включай звук, пристегивайся! Вспомним главные маршруты, перечитаем золотой фонд шуток, пройдем опрос и откроем сюрприз.
+          Включай звук, пристегивайся! Вспомним главные маршруты, перечитаем золотой фонд шуток, найдем любовь в шпита-дейтинге, пройдем опрос и откроем сюрприз.
         </p>
       </div>
 
@@ -156,7 +159,7 @@ function QuizScene() {
   return (
     <div className="flex-1 flex flex-col justify-between p-6 bg-gradient-to-b from-amber-950/70 via-zinc-900 to-zinc-950 select-none">
       <div className="flex items-center justify-between text-xs text-amber-300/80 font-mono">
-        <span>СЦЕНА 3 / ИНТЕРАКТИВНЫЙ ОПРОС</span>
+        <span>СЦЕНА 5 / ИНТЕРАКТИВНЫЙ ОПРОС</span>
         <button
           type="button"
           onClick={() => {
@@ -167,7 +170,7 @@ function QuizScene() {
           className="text-white/60 hover:text-white transition-colors flex items-center gap-1 cursor-pointer"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>К сторис</span>
+          <span>К дейтингу</span>
         </button>
       </div>
 
@@ -324,8 +327,12 @@ function GameScene() {
    4. ФИНАЛЬНАЯ СЦЕНА (С салютом, копированием и полным рекапом)
 ============================================================================ */
 function FinalScene() {
-  const { quizAnswers, resetProgress, prevScene, isMuted } = useAppStore();
+  const { quizAnswers, characterSwipes, resetProgress, prevScene, isMuted } = useAppStore();
   const [copied, setCopied] = useState(false);
+
+  const datingMatches = CHARACTERS.filter(
+    (character) => characterSwipes[character.id] === 'like'
+  ).length;
 
   // Праздничный салют при открытии финала
   useEffect(() => {
@@ -360,7 +367,7 @@ function FinalScene() {
 
     const textToShare = `🎂 Мой Шпита 2026 Wrapped:\n🍺 Спонсор года: ${
       quizAnswers['q1'] || 'Шпиту пива'
-    }\n🏰 Статус: Почетный гражданин Шпитсбурга 👑\nС Днем Рождения! 🎉`;
+    }\n💘 Мэтчи в дейтинге: ${datingMatches} из ${CHARACTERS.length}\n🏰 Статус: Почетный гражданин Шпитсбурга 👑\nС Днем Рождения! 🎉`;
 
     if (navigator.clipboard) {
       navigator.clipboard.writeText(textToShare).then(() => {
@@ -413,6 +420,12 @@ function FinalScene() {
           <div className="flex items-center justify-between border-b border-white/5 pb-2">
             <span className="text-zinc-400">Шутки года:</span>
             <span className="font-bold text-purple-300">Пройден весь рекап 🏰</span>
+          </div>
+          <div className="flex items-center justify-between border-b border-white/5 pb-2">
+            <span className="text-zinc-400">Мэтчи в дейтинге:</span>
+            <span className="font-bold text-rose-300">
+              {datingMatches} из {CHARACTERS.length} 💘
+            </span>
           </div>
           <div className="flex items-center justify-between pt-1">
             <span className="text-zinc-400">Присвоенный статус:</span>

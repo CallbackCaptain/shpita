@@ -474,7 +474,7 @@ export default function JokesScene() {
           className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-fuchsia-500 to-indigo-500 hover:from-fuchsia-400 hover:to-indigo-400 font-bold text-sm text-white shadow-lg shadow-fuchsia-500/25 flex items-center justify-center gap-1.5"
         >
           <span>
-            {currentIndex === JOKES_DATA.length - 1 ? 'Перейти к квизу 🎯' : 'Следующая шутка'}
+            {currentIndex === JOKES_DATA.length - 1 ? 'Найти любовь 💘' : 'Следующая шутка'}
           </span>
           <ChevronRight className="w-4 h-4" />
         </motion.button>

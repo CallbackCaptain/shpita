@@ -5,7 +5,12 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      screens: {
+        // Компактный режим для невысоких экранов (iPhone SE и подобные)
+        short: { raw: '(max-height: 760px)' },
+      },
+    },
   },
   plugins: [],
 };
