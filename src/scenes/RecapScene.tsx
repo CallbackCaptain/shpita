@@ -19,6 +19,15 @@ interface StorySlide {
   accentColor: string;
 }
 
+const getStatFontSize = (text?: string) => {
+  if (!text) return 'text-4xl sm:text-5xl';
+  const len = text.length;
+  if (len > 14) return 'text-xl sm:text-2xl';
+  if (len > 10) return 'text-2xl sm:text-3xl';
+  if (len > 7) return 'text-3xl sm:text-4xl';
+  return 'text-4xl sm:text-5xl';
+};
+
 // Контент рекапа на основе легендарных шуток Шпиты
 const STORIES_DATA: StorySlide[] = [
   {
@@ -430,12 +439,16 @@ export default function RecapScene() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15 }}
-                className="p-5 rounded-3xl bg-white/10 border border-white/15 backdrop-blur-xl shadow-2xl"
+                className="p-5 rounded-3xl bg-white/10 border border-white/15 backdrop-blur-xl shadow-2xl overflow-hidden max-w-full"
               >
-                <div className={`text-4xl sm:text-5xl font-black tracking-tighter ${currentStory.accentColor}`}>
+                <div
+                  className={`font-black tracking-tight leading-tight break-words [overflow-wrap:anywhere] hyphens-auto ${getStatFontSize(
+                    currentStory.statNumber
+                  )} ${currentStory.accentColor}`}
+                >
                   {currentStory.statNumber}
                 </div>
-                <div className="text-xs text-white/70 mt-1 font-medium">
+                <div className="text-xs text-white/70 mt-1.5 font-medium break-words">
                   {currentStory.statLabel}
                 </div>
               </motion.div>
