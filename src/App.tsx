@@ -3,8 +3,10 @@ import { AnimatePresence, motion, type Variants } from 'framer-motion';
 import { Sparkles, Trophy, RotateCcw, Share2, Check, ArrowLeft } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useAppStore } from './store/useAppStore';
+import { triggerHaptic } from './utils/haptics';
 import { sound } from './utils/sound';
 import RecapScene from './scenes/RecapScene';
+import JokesScene from './scenes/JokesScene';
 
 // Варианты анимации переходов между сценами
 const sceneVariants: Variants = {
@@ -145,16 +147,16 @@ function QuizScene() {
   };
 
   const options = [
-    'Литры кофе ☕',
-    'Шпита пива в баре Германии 🍺',
-    'Энергетики ⚡',
-    'Святая вода 💧',
+    'Шпиту пива в баре Германии 🍺',
+    'Литры кофе из Шпитсбурга ☕',
+    'Энергетик Шпитенваген ⚡',
+    'Святая вода из реки Шпитейн 💧',
   ];
 
   return (
     <div className="flex-1 flex flex-col justify-between p-6 bg-gradient-to-b from-amber-950/70 via-zinc-900 to-zinc-950 select-none">
       <div className="flex items-center justify-between text-xs text-amber-300/80 font-mono">
-        <span>СЦЕНА 4 / ИНТЕРАКТИВНЫЙ ОПРОС</span>
+        <span>СЦЕНА 3 / ИНТЕРАКТИВНЫЙ ОПРОС</span>
         <button
           type="button"
           onClick={() => {
@@ -165,7 +167,7 @@ function QuizScene() {
           className="text-white/60 hover:text-white transition-colors flex items-center gap-1 cursor-pointer"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>К шуткам</span>
+          <span>К сторис</span>
         </button>
       </div>
 
@@ -358,9 +360,9 @@ function FinalScene() {
     triggerHaptic(20);
     sound.playTap(isMuted);
 
-    const textToShare = `🎂 Мой Шпита 2026 Wrapped:\n☕ Главный напиток: ${
-      quizAnswers['q1'] || 'Шпита'
-    }\n👑 Оценено шуток: ${totalReactions}\nС Днем Рождения! 🎉`;
+    const textToShare = `🎂 Мой Шпита 2026 Wrapped:\n🍺 Спонсор года: ${
+      quizAnswers['q1'] || 'Шпиту пива'
+    }\n🏰 Статус: Почетный гражданин Шпитсбурга 👑\nС Днем Рождения! 🎉`;
 
     if (navigator.clipboard) {
       navigator.clipboard.writeText(textToShare).then(() => {
@@ -411,12 +413,12 @@ function FinalScene() {
             <span className="font-bold text-amber-300">{quizAnswers['q1'] || 'Не выбран'}</span>
           </div>
           <div className="flex items-center justify-between border-b border-white/5 pb-2">
-            <span className="text-zinc-400">Шуток оценено:</span>
-            <span className="font-bold text-purple-300">{totalReactions} из золотого фонда</span>
+            <span className="text-zinc-400">Шутки года:</span>
+            <span className="font-bold text-purple-300">Пройден весь рекап 🏰</span>
           </div>
           <div className="flex items-center justify-between pt-1">
             <span className="text-zinc-400">Присвоенный статус:</span>
-            <span className="font-bold text-emerald-400">Почетный Шпита 2026 👑</span>
+            <span className="font-bold text-emerald-400">Почетный гражданин Шпитсбурга 👑</span>
           </div>
         </div>
 
