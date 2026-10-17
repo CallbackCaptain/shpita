@@ -1,9 +1,10 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { sound } from '../utils/sound';
 
 export type SceneType = 'INTRO' | 'RECAP' | 'JOKES' | 'QUIZ' | 'GAME' | 'FINAL';
 
-const SCENE_ORDER: SceneType[] = ['INTRO', 'RECAP', 'JOKES', 'QUIZ', 'GAME', 'FINAL'];
+export const SCENE_ORDER: SceneType[] = ['INTRO', 'RECAP', 'JOKES', 'QUIZ', 'GAME', 'FINAL'];
 
 interface AppState {
   currentScene: SceneType;
@@ -12,6 +13,7 @@ interface AppState {
   jokeReactions: Record<string, string>;
   gameScore: number;
   isAudioUnlocked: boolean;
+  isMuted: boolean;
 
   // Экшены
   nextScene: () => void;
@@ -19,8 +21,9 @@ interface AppState {
   goToScene: (scene: SceneType) => void;
   saveQuizAnswer: (questionId: string, answer: string) => void;
   saveJokeReaction: (jokeId: string, reaction: string) => void;
-  setGameScore: (score: number) => void;
+  setGameScore: (score: number | ((prev: number) => number)) => void;
   unlockAudio: () => void;
+  toggleMute: () => void;
   resetProgress: () => void;
 }
 
@@ -33,6 +36,7 @@ export const useAppStore = create<AppState>()(
       jokeReactions: {},
       gameScore: 0,
       isAudioUnlocked: false,
+      isMuted: false,
 
       nextScene: () => {
         const { currentScene } = get();
@@ -54,10 +58,12 @@ export const useAppStore = create<AppState>()(
         const { currentScene } = get();
         const currentIndex = SCENE_ORDER.indexOf(currentScene);
         const targetIndex = SCENE_ORDER.indexOf(scene);
-        set({
-          currentScene: scene,
-          direction: targetIndex >= currentIndex ? 1 : -1,
-        });
+        if (targetIndex !== -1) {
+          set({
+            currentScene: scene,
+            direction: targetIndex >= currentIndex ? 1 : -1,
+          });
+        }
       },
 
       saveQuizAnswer: (questionId, answer) =>
@@ -70,9 +76,18 @@ export const useAppStore = create<AppState>()(
           jokeReactions: { ...state.jokeReactions, [jokeId]: reaction },
         })),
 
-      setGameScore: (score) => set({ gameScore: score }),
+      setGameScore: (scoreOrUpdater) =>
+        set((state) => ({
+          gameScore: typeof scoreOrUpdater === 'function' ? scoreOrUpdater(state.gameScore) : scoreOrUpdater,
+        })),
 
-      unlockAudio: () => set({ isAudioUnlocked: true }),
+      unlockAudio: () => {
+        sound.unlock();
+        set({ isAudioUnlocked: true });
+      },
+
+      toggleMute: () =>
+        set((state) => ({ isMuted: !state.isMuted })),
 
       resetProgress: () =>
         set({
@@ -85,12 +100,12 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'birthday-recap-storage',
-      // Не сохраняем флаг разблокировки звука, т.к. после перезагрузки браузер снова потребует тап
       partialize: (state) => ({
         currentScene: state.currentScene,
         quizAnswers: state.quizAnswers,
         jokeReactions: state.jokeReactions,
         gameScore: state.gameScore,
+        isMuted: state.isMuted,
       }),
     }
   )

@@ -3,11 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Volume2, VolumeX, Pause } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { triggerHaptic } from '../utils/haptics';
+import { sound } from '../utils/sound';
 
 // Структура одного слайда Рекапа
 interface StorySlide {
   id: string;
-  duration: number; // Длительность в мс (например, 6000 = 6 сек)
+  duration: number; // Длительность в мс
   tag: string;
   title: string;
   statNumber?: string;
@@ -18,77 +19,105 @@ interface StorySlide {
   accentColor: string;
 }
 
-// Контент рекапа (в стиле Spotify Wrapped)
+// Контент рекапа на основе легендарных шуток Шпиты
 const STORIES_DATA: StorySlide[] = [
   {
-    id: 'story-1',
-    duration: 5000,
-    tag: 'ГЛАВНАЯ ЛОКАЦИЯ ГОДА',
-    title: 'Твой год был полон маршрутов',
-    statNumber: '1 420 км',
-    statLabel: 'пройдено пешком в поисках приключений',
-    description: 'От ночных прогулок до спонтанных поездок, которые начинались со слов «давай просто посидим часик».',
+    id: 'story-neuschpitastein',
+    duration: 6000,
+    tag: 'АРХИТЕКТУРА И ТУРИЗМ',
+    title: 'Главная жемчужина и замок Баварии',
+    statNumber: 'Нойшпиташтайн',
+    statLabel: 'замок, построенный строго по канонам Шпиты',
+    description: 'Король Людвиг II лично утвердил проект. Туристы со всего мира съезжаются взглянуть на этот архитектурный триумф.',
+    emoji: '🏰',
+    bgGradient: 'from-emerald-950 via-teal-950 to-zinc-950',
+    accentColor: 'text-emerald-400',
+  },
+  {
+    id: 'story-beer',
+    duration: 6000,
+    tag: 'МЕЖДУНАРОДНЫЙ ЭТИКЕТ',
+    title: 'Как правильно делать заказ в баре Германии',
+    statNumber: 'Шпиту пива!',
+    statLabel: 'и сочная шпитавурст с горчицей к нему',
+    description: '«— Guten Шпита! Мне Шпиту пива, пожалуйста!» Бармен в Мюнхене наливает не задумываясь. Данке шпита!',
+    emoji: '🍺',
+    bgGradient: 'from-amber-950 via-orange-950 to-zinc-950',
+    accentColor: 'text-amber-400',
+  },
+  {
+    id: 'story-capital',
+    duration: 6000,
+    tag: 'ГЕОГРАФИЯ ГОДА',
+    title: 'Куда ведут скоростные немецкие автобаны',
+    statNumber: 'Шпитсбург',
+    statLabel: 'официальная столица и сердце навигатора',
+    description: 'Забудь про Берлин. Главная водная артерия — река Шпитейн, валюта — шпитенмарка, а столица Германии — навсегда Шпитсбург.',
     emoji: '🗺️',
-    bgGradient: 'from-violet-950 via-fuchsia-950 to-zinc-950',
-    accentColor: 'text-fuchsia-400',
-  },
-  {
-    id: 'story-2',
-    duration: 6000,
-    tag: 'ТОП-1 ЖАНР ВЫЖИВАНИЯ',
-    title: 'Мастер закрытия задач в последнюю секунду',
-    statNumber: '99.4%',
-    statLabel: 'нервных клеток успешно восстановлено',
-    description: 'Пока другие паниковали, ты просто открывал мем в чате и делал вид, что всё идет строго по плану.',
-    emoji: '🔥',
-    bgGradient: 'from-rose-950 via-orange-950 to-zinc-950',
-    accentColor: 'text-orange-400',
-  },
-  {
-    id: 'story-3',
-    duration: 6000,
-    tag: 'НОЧНОЙ ДОЗОР',
-    title: 'Пик твоей продуктивности приходился на…',
-    statNumber: '02:15',
-    statLabel: 'среднее время генерации гениальных идей',
-    description: 'Именно в это время рождались самые смелые планы, покупались странные вещи и отправлялись лучшие голосовые.',
-    emoji: '🦉',
     bgGradient: 'from-cyan-950 via-blue-950 to-zinc-950',
     accentColor: 'text-cyan-400',
   },
   {
-    id: 'story-4',
-    duration: 5500,
-    tag: 'АУРА ГОДА',
-    title: 'Главный человек в любом чате',
-    statNumber: 'ТОП 0.1%',
-    statLabel: 'по уровню поддержки и лучших шуток',
-    description: 'Но хватит сухой статистики. Впереди — золотой фонд локальных шуток и легендарных цитат!',
+    id: 'story-genetics',
+    duration: 6000,
+    tag: 'ГЕНЕТИКА И ФИЛОСОФИЯ',
+    title: 'Главный неразрешимый вопрос года',
+    statNumber: '100% Шпита',
+    statLabel: 'но семейный совет в полном тупике...',
+    description: '«Ты шпита, я шпита... почему у нас родился нацист?!» Главный фундаментальный вопрос после закона всемирного шпитания.',
+    emoji: '🧬',
+    bgGradient: 'from-fuchsia-950 via-purple-950 to-zinc-950',
+    accentColor: 'text-fuchsia-400',
+  },
+  {
+    id: 'story-precision',
+    duration: 6000,
+    tag: 'НЕМЕЦКАЯ ТОЧНОСТЬ',
+    title: 'Инструмент максимальной точности',
+    statNumber: 'Шпитангенциркуль',
+    statLabel: 'погрешность измерений — ровно 0.0 шпит',
+    description: 'На нем держится народный авто Шпитенваген, философский труд «Критика чистого шпиты» и тяжелый металл Rammшпита.',
+    emoji: '📐',
+    bgGradient: 'from-indigo-950 via-violet-950 to-zinc-950',
+    accentColor: 'text-indigo-400',
+  },
+  {
+    id: 'story-diagnosis',
+    duration: 6000,
+    tag: 'ИТОГОВЫЙ ВЕРДИКТ',
+    title: 'Заключение врачебной комиссии',
+    statNumber: 'Острая Шпита',
+    statLabel: 'головного мозга высшей категории',
+    description: '«— Sprechen Sie Deutsch? — Нет, я говорю исключительно на шпита!» Ich liebe Шпита. Пристегнись, впереди праздничный квиз!',
     emoji: '👑',
-    bgGradient: 'from-emerald-950 via-teal-950 to-zinc-950',
-    accentColor: 'text-emerald-400',
+    bgGradient: 'from-rose-950 via-pink-950 to-zinc-950',
+    accentColor: 'text-rose-400',
   },
 ];
 
 export default function RecapScene() {
-  const { nextScene, prevScene } = useAppStore();
+  const { nextScene, prevScene, isMuted, toggleMute } = useAppStore();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [progress, setProgress] = useState(0); // от 0 до 100
   const [isPaused, setIsPaused] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
   const [slideDirection, setSlideDirection] = useState<1 | -1>(1);
 
-  // Рефы для точного таймера и распознавания "Тап vs Удержание"
+  // Рефы для таймера и распознавания "Тап / Свайп / Удержание"
   const elapsedRef = useRef<number>(0);
   const lastFrameTimeRef = useRef<number | null>(null);
   const pointerDownTimeRef = useRef<number>(0);
+  const pointerStartXRef = useRef<number>(0);
+  const pointerStartYRef = useRef<number>(0);
+  const isHoldingRef = useRef<boolean>(false);
+  const holdTimeoutRef = useRef<number | null>(null);
 
   const currentStory = STORIES_DATA[currentIndex];
 
-  // Переход к следующему слайду (или следующей сцене, если сторис закончились)
+  // Переход к следующему слайду (или следующей сцене)
   const handleNextStory = useCallback(() => {
     triggerHaptic(12);
+    sound.playSwipe(isMuted);
     elapsedRef.current = 0;
     setProgress(0);
 
@@ -96,14 +125,16 @@ export default function RecapScene() {
       setSlideDirection(1);
       setCurrentIndex((prev) => prev + 1);
     } else {
-      nextScene(); // Переход к QUIZ
+      nextScene(); // Переход к JOKES
     }
-  }, [currentIndex, nextScene]);
+  }, [currentIndex, isMuted, nextScene]);
 
   // Переход к предыдущему слайду (или возврат в Интро)
   const handlePrevStory = useCallback(() => {
     triggerHaptic(12);
-    // Если сторис прошла больше чем на 25%, тап назад просто перезапускает текущую сторис
+    sound.playSwipe(isMuted);
+
+    // Если сторис прошла больше чем на 1.2 сек, тап назад просто перезапускает текущую сторис
     if (elapsedRef.current > 1200) {
       elapsedRef.current = 0;
       setProgress(0);
@@ -119,9 +150,37 @@ export default function RecapScene() {
     } else {
       prevScene(); // Возврат в INTRO
     }
-  }, [currentIndex, prevScene]);
+  }, [currentIndex, isMuted, prevScene]);
 
-  // Главный игровой цикл (requestAnimationFrame) для плавного заполнения полосок
+  // Прямой переход по клику на прогресс-бар
+  const jumpToStory = (targetIndex: number) => {
+    if (targetIndex === currentIndex) return;
+    triggerHaptic(10);
+    sound.playTap(isMuted);
+    elapsedRef.current = 0;
+    setProgress(0);
+    setSlideDirection(targetIndex > currentIndex ? 1 : -1);
+    setCurrentIndex(targetIndex);
+  };
+
+  // Клавиатурная навигация (стрелки и пробел)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') {
+        handleNextStory();
+      } else if (e.key === 'ArrowLeft') {
+        handlePrevStory();
+      } else if (e.key === ' ') {
+        e.preventDefault();
+        setIsPaused((p) => !p);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleNextStory, handlePrevStory]);
+
+  // Игровой цикл (requestAnimationFrame) для плавного заполнения полосок
   useEffect(() => {
     let animationFrameId: number;
 
@@ -155,7 +214,7 @@ export default function RecapScene() {
     };
   }, [currentIndex, isPaused, currentStory.duration, handleNextStory]);
 
-  // Авто-пауза при сворачивании вкладки или звонке на телефоне
+  // Авто-пауза при сворачивании вкладки
   useEffect(() => {
     const handleVisibilityChange = () => {
       setIsPaused(document.hidden);
@@ -164,26 +223,66 @@ export default function RecapScene() {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
-  // Обработка касания экрана
-  const handlePointerDown = () => {
+  // Очистка таймера удержания при размонтировании
+  useEffect(() => {
+    return () => {
+      if (holdTimeoutRef.current) clearTimeout(holdTimeoutRef.current);
+    };
+  }, []);
+
+  // Начало касания
+  const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
+    // Игнорируем нажатия правой кнопки мыши
+    if (e.button && e.button !== 0) return;
+
     pointerDownTimeRef.current = performance.now();
-    setIsPaused(true);
+    pointerStartXRef.current = e.clientX;
+    pointerStartYRef.current = e.clientY;
+    isHoldingRef.current = false;
+
+    // Таймер удержания (через 350 мс переходит в режим паузы)
+    if (holdTimeoutRef.current) clearTimeout(holdTimeoutRef.current);
+    holdTimeoutRef.current = window.setTimeout(() => {
+      isHoldingRef.current = true;
+      setIsPaused(true);
+    }, 350);
   };
 
-  // Обработка отпускания пальца
+  // Окончание касания: точное различение свайпа, тапа и удержания
   const handlePointerUp = (e: PointerEvent<HTMLDivElement>) => {
-    const holdDuration = performance.now() - pointerDownTimeRef.current;
-    setIsPaused(false);
+    if (holdTimeoutRef.current) {
+      clearTimeout(holdTimeoutRef.current);
+      holdTimeoutRef.current = null;
+    }
 
-    // Если держали дольше 200 мс — это была пауза (Hold), слайд не переключаем
-    if (holdDuration > 200) {
+    const holdDuration = performance.now() - pointerDownTimeRef.current;
+    const deltaX = e.clientX - pointerStartXRef.current;
+    const deltaY = e.clientY - pointerStartYRef.current;
+
+    // Если был в режиме удержания (паузы)
+    if (isHoldingRef.current || holdDuration > 400) {
+      isHoldingRef.current = false;
+      setIsPaused(false);
       return;
     }
 
-    // Иначе это быстрый Тап: вычисляем зону (левые 30% = назад, правые 70% = вперед)
+    setIsPaused(false);
+
+    // Проверяем свайп по горизонтали (свайп влево = вперед, свайп вправо = назад)
+    const isHorizontalSwipe = Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5;
+    if (isHorizontalSwipe) {
+      if (deltaX < 0) {
+        handleNextStory(); // Свайп влево -> следующий слайд
+      } else {
+        handlePrevStory(); // Свайп вправо -> предыдущий слайд
+      }
+      return;
+    }
+
+    // Обычный тап: определяем зону по точке нажатия (startX)
     const rect = e.currentTarget.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const isLeftZone = clickX < rect.width * 0.3;
+    const relativeX = pointerStartXRef.current - rect.left;
+    const isLeftZone = relativeX < rect.width * 0.3;
 
     if (isLeftZone) {
       handlePrevStory();
@@ -193,6 +292,11 @@ export default function RecapScene() {
   };
 
   const handlePointerCancel = () => {
+    if (holdTimeoutRef.current) {
+      clearTimeout(holdTimeoutRef.current);
+      holdTimeoutRef.current = null;
+    }
+    isHoldingRef.current = false;
     setIsPaused(false);
   };
 
@@ -202,10 +306,10 @@ export default function RecapScene() {
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerCancel}
       onPointerLeave={handlePointerCancel}
-      onContextMenu={(e) => e.preventDefault()} // Блокируем контекстное меню при долгом тапе на Android
-      className={`relative flex-1 flex flex-col justify-between p-6 bg-gradient-to-b ${currentStory.bgGradient} transition-colors duration-700 select-none overflow-hidden cursor-pointer`}
+      onContextMenu={(e) => e.preventDefault()} // Блокируем контекстное меню при долгом тапе
+      className={`relative flex-1 flex flex-col justify-between p-6 bg-gradient-to-b ${currentStory.bgGradient} transition-colors duration-700 select-none overflow-hidden cursor-pointer touch-none`}
     >
-      {/* Анимированные фоновые пятна в стиле Spotify Wrapped */}
+      {/* Анимированные фоновые пятна */}
       <motion.div
         key={`blob-${currentStory.id}`}
         initial={{ scale: 0.8, opacity: 0, rotate: 0 }}
@@ -218,13 +322,13 @@ export default function RecapScene() {
         className="absolute -top-20 -right-20 w-80 h-80 rounded-full bg-white/15 blur-[80px] pointer-events-none"
       />
 
-      {/* ВЕРХНЯЯ ПАНЕЛЬ: Прогресс-бары + Шапка (Прячется при долгом удержании) */}
+      {/* ВЕРХНЯЯ ПАНЕЛЬ: Прогресс-бары + Шапка */}
       <motion.header
         animate={{ opacity: isPaused ? 0 : 1, y: isPaused ? -10 : 0 }}
         transition={{ duration: 0.2 }}
         className="relative z-20 space-y-3"
       >
-        {/* Полоски прогресса */}
+        {/* Полоски прогресса с увеличенной зоной клика */}
         <div className="flex gap-1.5 w-full">
           {STORIES_DATA.map((story, idx) => {
             let barWidth = '0%';
@@ -232,15 +336,23 @@ export default function RecapScene() {
             if (idx === currentIndex) barWidth = `${progress}%`;
 
             return (
-              <div
+              <button
                 key={story.id}
-                className="flex-1 h-1 bg-white/25 rounded-full overflow-hidden backdrop-blur-sm"
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  jumpToStory(idx);
+                }}
+                className="flex-1 py-2 -my-2 flex items-center cursor-pointer group focus:outline-none"
+                aria-label={`Перейти к слайду ${idx + 1}`}
               >
-                <div
-                  className="h-full bg-white rounded-full"
-                  style={{ width: barWidth }}
-                />
-              </div>
+                <div className="w-full h-1.5 bg-white/20 rounded-full overflow-hidden backdrop-blur-sm group-hover:bg-white/30 transition-colors">
+                  <div
+                    className="h-full bg-white rounded-full transition-all duration-75"
+                    style={{ width: barWidth }}
+                  />
+                </div>
+              </button>
             );
           })}
         </div>
@@ -258,24 +370,26 @@ export default function RecapScene() {
             </span>
           </div>
 
-          {/* Кнопка звука — останавливаем всплытие события, чтобы тап по ней не листал сторис */}
+          {/* Кнопка звука */}
           <button
             type="button"
             onPointerDown={(e) => e.stopPropagation()}
-            onPointerUp={(e) => {
+            onClick={(e) => {
               e.stopPropagation();
               triggerHaptic(10);
-              setIsMuted(!isMuted);
+              toggleMute();
+              sound.playTap(!isMuted);
             }}
             className="p-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md transition-colors"
+            title={isMuted ? 'Включить звук' : 'Выключить звук'}
           >
             {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
           </button>
         </div>
       </motion.header>
 
-      {/* ЦЕНТРАЛЬНЫЙ КОНТЕНТ СЛАЙДА */}
-      <div className="relative z-10 my-auto py-8">
+      {/* ЦЕНТРАЛЬНЫЙ КОНТЕНТ СЛАЙДА (с поддержкой прокрутки на сверхмалых экранах) */}
+      <div className="relative z-10 my-auto py-4 min-h-0 overflow-y-auto no-scrollbar">
         <AnimatePresence mode="wait" custom={slideDirection}>
           <motion.div
             key={currentStory.id}
@@ -284,7 +398,7 @@ export default function RecapScene() {
             animate={{
               opacity: 1,
               x: 0,
-              scale: isPaused ? 0.97 : 1, // Легкий зум-аут при удержании пальца
+              scale: isPaused ? 0.97 : 1,
             }}
             exit={{ opacity: 0, x: slideDirection * -40, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 320, damping: 28 }}
@@ -306,11 +420,11 @@ export default function RecapScene() {
             </div>
 
             {/* Заголовок */}
-            <h2 className="text-3xl font-extrabold leading-tight tracking-tight text-white">
+            <h2 className="text-2xl sm:text-3xl font-extrabold leading-tight tracking-tight text-white">
               {currentStory.title}
             </h2>
 
-            {/* Крупная цифра статистики (Wrapped-style карточка) */}
+            {/* Крупная цифра статистики */}
             {currentStory.statNumber && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -318,7 +432,7 @@ export default function RecapScene() {
                 transition={{ delay: 0.15 }}
                 className="p-5 rounded-3xl bg-white/10 border border-white/15 backdrop-blur-xl shadow-2xl"
               >
-                <div className={`text-5xl font-black tracking-tighter ${currentStory.accentColor}`}>
+                <div className={`text-4xl sm:text-5xl font-black tracking-tighter ${currentStory.accentColor}`}>
                   {currentStory.statNumber}
                 </div>
                 <div className="text-xs text-white/70 mt-1 font-medium">
@@ -349,7 +463,7 @@ export default function RecapScene() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/50 border border-white/15 text-xs text-white/80 backdrop-blur-md"
+              className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 border border-white/15 text-xs text-white/80 backdrop-blur-md"
             >
               <Pause className="w-3 h-3 fill-current" />
               <span>На паузе</span>
@@ -362,7 +476,7 @@ export default function RecapScene() {
               exit={{ opacity: 0 }}
               className="text-[11px] text-white/40 tracking-wide text-center"
             >
-              Тап — дальше • Удерживай — пауза
+              Тап — дальше • Свайп • Удерживай — пауза
             </motion.div>
           )}
         </AnimatePresence>
