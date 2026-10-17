@@ -326,8 +326,7 @@ function GameScene() {
 function FinalScene() {
   const { quizAnswers, jokeReactions, resetProgress, prevScene, isMuted } = useAppStore();
   const [copied, setCopied] = useState(false);
-
-  const totalReactions = Object.keys(jokeReactions).length;
+  const totalReactions = Object.keys(jokeReactions || {}).length;
 
   // Праздничный салют при открытии финала
   useEffect(() => {
@@ -413,8 +412,10 @@ function FinalScene() {
             <span className="font-bold text-amber-300">{quizAnswers['q1'] || 'Не выбран'}</span>
           </div>
           <div className="flex items-center justify-between border-b border-white/5 pb-2">
-            <span className="text-zinc-400">Шутки года:</span>
-            <span className="font-bold text-purple-300">Пройден весь рекап 🏰</span>
+            <span className="text-zinc-400">Шуток оценено:</span>
+            <span className="font-bold text-purple-300">
+              {totalReactions > 0 ? `${totalReactions} из золотого фонда` : 'Золотой фонд изучен 🏰'}
+            </span>
           </div>
           <div className="flex items-center justify-between pt-1">
             <span className="text-zinc-400">Присвоенный статус:</span>
