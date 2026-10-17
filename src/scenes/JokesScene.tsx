@@ -384,7 +384,7 @@ export default function JokesScene() {
                   handleReveal(currentJoke.id);
                 }
               }}
-              className={`relative p-5 rounded-3xl border backdrop-blur-xl transition-all duration-300 focus:outline-none ${
+              className={`relative p-5 rounded-3xl border backdrop-blur-xl transition-all duration-300 focus:outline-none overflow-hidden max-w-full ${
                 isRevealed
                   ? `bg-white/10 ${currentJoke.borderGlow} shadow-2xl shadow-black/40`
                   : 'bg-white/5 border-white/15 cursor-pointer hover:bg-white/10 active:scale-[0.98]'
@@ -401,11 +401,11 @@ export default function JokesScene() {
                     <span>💥</span> ПАНЧЛАЙН
                   </p>
                   <div
-                    className={`text-xl sm:text-2xl font-black tracking-tight leading-relaxed ${currentJoke.accentColor}`}
+                    className={`text-xl sm:text-2xl font-black tracking-tight leading-relaxed break-words [overflow-wrap:anywhere] hyphens-auto ${currentJoke.accentColor}`}
                   >
                     {currentJoke.punchline}
                   </div>
-                  <p className="text-xs text-white/60 pt-1 italic border-t border-white/10">
+                  <p className="text-xs text-white/60 pt-1 italic border-t border-white/10 break-words">
                     {currentJoke.comment}
                   </p>
                 </motion.div>

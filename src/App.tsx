@@ -420,7 +420,7 @@ function FinalScene() {
           </div>
         </div>
 
-        <p className="text-zinc-400 text-xs leading-relaxed max-w-[280px] mx-auto">
+        <p className="text-zinc-400 text-xs leading-relaxed max-w-[280px] mx-auto break-words [overflow-wrap:anywhere]">
           Пусть следующий год будет полон ярких открытий, точных как шпитациркуль решений и поводов для громкого смеха!
         </p>
       </div>
