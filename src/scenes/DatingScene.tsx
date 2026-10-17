@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AnimatePresence,
   motion,
@@ -53,18 +53,42 @@ export default function DatingScene() {
     prevScene,
     isMuted,
     characterSwipes,
+    characterOrder,
+    shuffleCharacterOrder,
     saveCharacterSwipe,
     undoCharacterSwipe,
     resetCharacterSwipes,
   } = useAppStore();
 
-  const remaining = CHARACTERS.filter((character) => !characterSwipes[character.id]);
+  useEffect(() => {
+    if (!characterOrder || characterOrder.length !== CHARACTERS.length) {
+      shuffleCharacterOrder();
+    }
+  }, [characterOrder, shuffleCharacterOrder]);
+
+  const orderedCharacters = useMemo(() => {
+    const charMap = new Map(CHARACTERS.map((c) => [c.id, c]));
+    if (characterOrder && characterOrder.length > 0) {
+      const list = characterOrder
+        .map((id) => charMap.get(id))
+        .filter((c): c is Character => Boolean(c));
+      for (const c of CHARACTERS) {
+        if (!list.some((item) => item.id === c.id)) {
+          list.push(c);
+        }
+      }
+      return list;
+    }
+    return CHARACTERS;
+  }, [characterOrder]);
+
+  const remaining = orderedCharacters.filter((character) => !characterSwipes[character.id]);
   const current = remaining[0];
   const next = remaining[1];
   const swipedCount = CHARACTERS.length - remaining.length;
   const swipedIds = Object.keys(characterSwipes);
   const lastSwipedId = swipedIds[swipedIds.length - 1];
-  const matches = CHARACTERS.filter((character) => characterSwipes[character.id] === 'like');
+  const matches = orderedCharacters.filter((character) => characterSwipes[character.id] === 'like');
   const skipped = CHARACTERS.length - remaining.length - matches.length;
 
   const [exitDirection, setExitDirection] = useState<1 | -1>(1);

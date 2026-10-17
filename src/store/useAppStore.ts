@@ -1,7 +1,16 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { sound } from '../utils/sound';
-import type { CharacterSwipe } from '../data/characters';
+import { CHARACTERS, type CharacterSwipe } from '../data/characters';
+
+const shuffleIds = (ids: string[]): string[] => {
+  const array = [...ids];
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+};
 
 export type SceneType = 'INTRO' | 'RECAP' | 'JOKES' | 'DATING' | 'QUIZ' | 'GAME' | 'FINAL';
 
@@ -21,6 +30,7 @@ interface AppState {
   quizAnswers: Record<string, string>;
   jokeReactions: Record<string, string>;
   characterSwipes: Record<string, CharacterSwipe>;
+  characterOrder: string[];
   gameScore: number;
   isAudioUnlocked: boolean;
   isMuted: boolean;
@@ -34,6 +44,7 @@ interface AppState {
   saveCharacterSwipe: (characterId: string, swipe: CharacterSwipe) => void;
   undoCharacterSwipe: (characterId: string) => void;
   resetCharacterSwipes: () => void;
+  shuffleCharacterOrder: () => void;
   setGameScore: (score: number | ((prev: number) => number)) => void;
   unlockAudio: () => void;
   toggleMute: () => void;
@@ -48,6 +59,7 @@ export const useAppStore = create<AppState>()(
       quizAnswers: {},
       jokeReactions: {},
       characterSwipes: {},
+      characterOrder: shuffleIds(CHARACTERS.map((c) => c.id)),
       gameScore: 0,
       isAudioUnlocked: false,
       isMuted: false,
@@ -102,7 +114,16 @@ export const useAppStore = create<AppState>()(
           return { characterSwipes };
         }),
 
-      resetCharacterSwipes: () => set({ characterSwipes: {} }),
+      resetCharacterSwipes: () =>
+        set({
+          characterSwipes: {},
+          characterOrder: shuffleIds(CHARACTERS.map((c) => c.id)),
+        }),
+
+      shuffleCharacterOrder: () =>
+        set({
+          characterOrder: shuffleIds(CHARACTERS.map((c) => c.id)),
+        }),
 
       setGameScore: (scoreOrUpdater) =>
         set((state) => ({
@@ -124,6 +145,7 @@ export const useAppStore = create<AppState>()(
           quizAnswers: {},
           jokeReactions: {},
           characterSwipes: {},
+          characterOrder: shuffleIds(CHARACTERS.map((c) => c.id)),
           gameScore: 0,
         }),
     }),
@@ -134,6 +156,7 @@ export const useAppStore = create<AppState>()(
         quizAnswers: state.quizAnswers,
         jokeReactions: state.jokeReactions,
         characterSwipes: state.characterSwipes,
+        characterOrder: state.characterOrder,
         gameScore: state.gameScore,
         isMuted: state.isMuted,
       }),
